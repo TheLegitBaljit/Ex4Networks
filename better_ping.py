@@ -78,7 +78,7 @@ def send_one_ping(my_socket, dest_addr, ID):
     my_socket.sendto(packet, (dest_addr, 1))
 
 
-def do_one(dest_addr, timeout):
+def ping(dest_addr, timeout):
     icmp = socket.getprotobyname("icmp")
 
     try:
@@ -111,15 +111,16 @@ def reset_watchdog():
     s.send(bytes('reset', 'utf-8'))
 
 
-def ping(dest_addr):
+if __name__ == '__main__':
+    dest_addr = sys.argv[1]
     timeout = 1
     seq = 1
 
-    t_watchdog = threading.Thread(target=lambda: os.system(f'python3 watchdog.py {dest_addr}'))
+    t_watchdog = threading.Thread(target=lambda: os.system(f'python3 watchdog.py'))
     t_watchdog.start()
 
     while True:
-        delay, ttl = do_one(dest_addr, timeout)
+        delay, ttl = ping(dest_addr, timeout)
         if delay == None:
             print(f"Request timed out")
         else:
@@ -129,7 +130,4 @@ def ping(dest_addr):
         reset_watchdog()
 
         seq += 1
-
-
-if __name__ == '__main__':
-    ping(sys.argv[1])
+        time.sleep(1)

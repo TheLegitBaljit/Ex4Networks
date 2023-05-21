@@ -76,7 +76,7 @@ def send_one_ping(my_socket, dest_addr, ID):
     my_socket.sendto(packet, (dest_addr, 1))
 
 
-def do_one(dest_addr, timeout):
+def ping(dest_addr, timeout):
     icmp = socket.getprotobyname("icmp")
 
     try:
@@ -101,13 +101,14 @@ def do_one(dest_addr, timeout):
     return delay, ttl
 
 
-def ping(dest_addr):
+if __name__ == '__main__':
+    dest_addr = sys.argv[1]
     timeout = 1
     seq = 1
 
     while True:
         try:
-            result = do_one(dest_addr, timeout)
+            result = ping(dest_addr, timeout)
             if result == None:
                 print(f"Request timed out")
             else:
@@ -120,7 +121,3 @@ def ping(dest_addr):
         except KeyboardInterrupt:
             print("Interrupted")
             exit(1)
-
-
-if __name__ == '__main__':
-    ping(sys.argv[1])
