@@ -1,17 +1,31 @@
-from better_ping import *
+import threading
+import socket
+import sys
 
 
+def watchdog(ip):
+    watchdog_timer = 10  # 10 seconds watchdog timer
 
-def watchdog(dest_addr):
-    timeout = 10
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind(('localhost', 3000))
+    s.listen(5)
+
     while True:
-        try:
-            delay = ping(dest_addr, timeout)
-            if delay is None:
-                print(f"Server {dest_addr} cannot be reached.")
-            else:
-                delay = delay * 1000
-                print(f"Reply from {dest_addr}: bytes=32 time={delay:.3f}ms")
-        except Exception as e:
-            print(f"Error: {e}")
-        time.sleep(1)
+        clientsocket, address = s.accept()
+        data = clientsocket.recv(1024).decode('utf-8')
+        if data == 'reset':
+            watchdog_timer = 10  # reset watchdog timer when receiving reset signal from ping.py
+        else:
+            break  # exit when receiving exit signal from ping.py
+
+    watchdog_timer -= 1  # decrement watchdog timer every second
+
+    if watchdog_timer == 0:  # if watchdog timer reaches zero then exit and print server cannot be reached.
+        print(f"server {ip} cannot be reached.")
+        sys.exit(0)
+
+
+if __name__ == '__main__':
+    ip = sys.argv[1]
+    watchdog(ip)
