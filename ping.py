@@ -37,11 +37,11 @@ def receive_one_ping(my_socket, ID, timeout):
     timeLeft = timeout
 
     while True:
-        startedSelect = time.time()
-        whatReady = select.select([my_socket], [], [], timeLeft)
-        howLongInSelect = (time.time() - startedSelect)
+        start_select = time.time()
+        ready = select.select([my_socket], [], [], timeLeft)
+        select_time = (time.time() - start_select)
 
-        if whatReady[0] == []:
+        if ready[0] == []:
             return
 
         timeReceived = time.time()
@@ -55,7 +55,7 @@ def receive_one_ping(my_socket, ID, timeout):
             ttl = ord(struct.unpack("c", recPacket[8:9])[0])
             return timeReceived - timeSent, ttl
 
-        timeLeft -= howLongInSelect
+        timeLeft -= select_time
 
         if timeLeft <= 0:
             return
